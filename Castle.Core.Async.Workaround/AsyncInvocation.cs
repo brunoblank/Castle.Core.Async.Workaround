@@ -56,6 +56,15 @@
             {
                 return enumerator.Current.InterceptAsync(this);
             }
+            
+            if (ReferenceEquals(invocation.InvocationTarget, invocation.Proxy))
+            {
+                throw new InvalidOperationException(
+                    "This is a DynamicProxy2 error: invocation.Proceed() has been called more times than expected." +
+                    "This usually signifies a bug in the calling code. Make sure that the last interceptor" +
+                    " selected for the method '" + Method + "'" +
+                    " calls invocation.Proceed() at most once.");
+            }
 
             return (Task)invocation.GetConcreteMethodInvocationTarget().Invoke(
                 invocation.InvocationTarget,
