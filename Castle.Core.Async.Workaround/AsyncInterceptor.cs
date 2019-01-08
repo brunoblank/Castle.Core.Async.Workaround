@@ -1,24 +1,33 @@
-﻿namespace Castle.Core.Async.Workaround
-{
-    using System;
-    using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
+using Castle.DynamicProxy;
 
-    public class AsyncInterceptor : IAsyncInterceptor
+namespace Castle.Core.Async.Workaround
+{
+    public class AsyncInterceptor : IInterceptor
     {
-        private readonly string id;
+        private readonly string _id;
 
         public AsyncInterceptor(string id)
         {
-            this.id = id;
+            _id = id;
         }
 
-        public async Task InterceptAsync(IAsyncInvocation invocation)
+        public void Intercept(IInvocation invocation)
+        {
+            invocation.ReturnValue = InterceptAsync(invocation);
+        }
+
+        public async Task InterceptAsync(IInvocation invocation)
         {
             await Task.Delay(500);
-            Console.WriteLine($"-> {id}");
-            await invocation.ProceedAsync();
+            Console.WriteLine($"-> {_id}");
+
+            invocation.Proceed();
+            await (Task) invocation.ReturnValue;
+
             await Task.Delay(500);
-            Console.WriteLine($"<- {id}");
+            Console.WriteLine($"<- {_id}");
         }
     }
 }

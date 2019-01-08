@@ -1,19 +1,13 @@
-﻿namespace Castle.Core.Async.Workaround
+﻿using System.Threading.Tasks;
+using Castle.DynamicProxy;
+
+namespace Castle.Core.Async.Workaround
 {
-    using System.Threading.Tasks;
-
-    using Castle.DynamicProxy;
-
     public class Program
     {
         private static readonly ProxyGenerator ProxyGenerator = new ProxyGenerator();
 
-        public static void Main(string[] args)
-        {
-            MainAsync().GetAwaiter().GetResult();
-        }
-
-        public static async Task MainAsync()
+        public static async Task Main(string[] args)
         {
             var proxy = ProxyGenerator.CreateClassProxyWithTarget(
                 new TargetClass(),

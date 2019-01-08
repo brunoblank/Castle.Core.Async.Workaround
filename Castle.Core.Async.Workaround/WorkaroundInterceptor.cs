@@ -1,19 +1,19 @@
-﻿namespace Castle.Core.Async.Workaround
-{
-    using Castle.DynamicProxy;
+﻿using Castle.DynamicProxy;
 
+namespace Castle.Core.Async.Workaround
+{
     public class WorkaroundInterceptor : IInterceptor
     {
-        private readonly IAsyncInterceptor[] interceptors;
+        private readonly IInterceptor[] _interceptors;
 
-        public WorkaroundInterceptor(params IAsyncInterceptor[] interceptors)
+        public WorkaroundInterceptor(params IInterceptor[] interceptors)
         {
-            this.interceptors = interceptors;
+            _interceptors = interceptors;
         }
 
         public void Intercept(IInvocation invocation)
         {
-            invocation.ReturnValue = new AsyncInvocation(invocation, interceptors).ProceedAsync();
+            new WorkaroundInvocation(invocation, _interceptors, 0).Invoke();
         }
     }
 }

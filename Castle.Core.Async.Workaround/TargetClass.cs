@@ -1,8 +1,8 @@
-﻿namespace Castle.Core.Async.Workaround
-{
-    using System;
-    using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 
+namespace Castle.Core.Async.Workaround
+{
     public class TargetClass
     {
         public virtual async Task SayHello()
