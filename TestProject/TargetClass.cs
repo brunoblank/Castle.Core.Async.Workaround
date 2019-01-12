@@ -1,15 +1,15 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-namespace Castle.Core.Async.Workaround
+namespace TestProject
 {
     public class TargetClass
     {
         public virtual async Task SayHello()
         {
-            await Task.Delay(1000);
+            await Task.Delay(500);
             Console.WriteLine("Hello!");
-            await Task.Delay(1000);
+            await Task.Delay(500);
         }
     }
 }

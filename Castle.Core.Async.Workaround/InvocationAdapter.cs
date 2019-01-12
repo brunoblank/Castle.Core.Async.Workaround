@@ -1,21 +1,20 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Reflection;
 using Castle.DynamicProxy;
 
 namespace Castle.Core.Async.Workaround
 {
-    public class WorkaroundInvocation : IInvocation
+    internal class InvocationAdapter : IInvocationV2
     {
-        private readonly int _index;
-        private readonly IReadOnlyList<IInterceptor> _interceptors;
+        private static readonly MethodInfo InvokeOnTargetMethodInfo = typeof(AbstractInvocation)
+            .GetMethod("InvokeMethodOnTarget", BindingFlags.Instance | BindingFlags.NonPublic);
+
+        private delegate void InvokeOnTargetDelegate();
         private readonly IInvocation _invocation;
 
-        public WorkaroundInvocation(IInvocation invocation, IReadOnlyList<IInterceptor> interceptors, int index)
+        public InvocationAdapter(IInvocation invocation)
         {
             _invocation = invocation;
-            _interceptors = interceptors;
-            _index = index;
         }
 
         public object[] Arguments => _invocation.Arguments;
@@ -53,30 +52,18 @@ namespace Castle.Core.Async.Workaround
             return _invocation.GetConcreteMethodInvocationTarget();
         }
 
-        public void Proceed()
-        {
-            new WorkaroundInvocation(_invocation, _interceptors, _index + 1).Invoke();
-        }
-
         public void SetArgumentValue(int index, object value)
         {
             _invocation.SetArgumentValue(index, value);
         }
 
-        public void Invoke()
+        public void InvokeOnTarget()
         {
-            if (_index < _interceptors.Count)
-                _interceptors[_index].Intercept(this);
-            else if (ReferenceEquals(_invocation.InvocationTarget, _invocation.Proxy))
-                throw new InvalidOperationException(
-                    "This is a DynamicProxy2 (" + nameof(WorkaroundInvocation)+ ") error: invocation.Proceed() " +
-                    "is not expected to be called on the last interceptor. \r\n" +
-                    " Method: " + Method + "\r\n Interceptor: " +
-                    _interceptors[_interceptors.Count - 1].GetType().FullName);
-            else
-                _invocation.ReturnValue = _invocation.GetConcreteMethodInvocationTarget().Invoke(
-                    _invocation.InvocationTarget,
-                    _invocation.Arguments);
+            //Workaround to call the private "InvokeOnTarget" on the AbstractInvocation class
+            var invokeDelegate = (InvokeOnTargetDelegate) InvokeOnTargetMethodInfo
+                .CreateDelegate(typeof(InvokeOnTargetDelegate), _invocation);
+
+            invokeDelegate();
         }
     }
 }
